@@ -82,12 +82,12 @@ app.post('/fruits/', (req, res)=>{
 })
 
 //connect to mongo database
-mongoose.connect("mongodb+srv://root:toor@perscholas.demfm.mongodb.net/myFirstDatabase?retryWrites=true&w=majority", { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 mongoose.connection.once('open', ()=> {
     console.log('connected to mongo')
 })
 
 
-app.listen(3000, () => {
+app.listen(PORT, () => {
   console.log("listening")
 })

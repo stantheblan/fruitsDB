@@ -4,7 +4,7 @@ const app = express()
 const fruits = require('./models/fruits.js')
 const mongoose = require('mongoose')
 const Fruit = require('./models/fruits.js')
-
+const PORT = process.env.PORT || 3001;
 
 //MUST BE FIRST 
 //middleware
@@ -13,7 +13,7 @@ app.use((req, res, next)=>{
   next()
 })
 //keep this near the top 
-app.use(express.urlencoded({extened:false}))
+app.use(express.urlencoded({extended:true}))
 
 //set up view engine above routes
 app.set('view engine', 'jsx')
@@ -88,6 +88,6 @@ mongoose.connection.once('open', ()=> {
 })
 
 
-app.listen(3000, () => {
+app.listen(PORT, () => {
   console.log("listening")
 })

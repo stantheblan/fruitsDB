@@ -4,6 +4,7 @@ const app = express()
 const fruits = require('./models/fruits.js')
 const mongoose = require('mongoose')
 const Fruit = require('./models/fruits.js')
+// const PORT = process.env.PORT || 3001;
 const PORT = process.env.PORT || 3001;
 
 //MUST BE FIRST 
@@ -86,7 +87,6 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
 mongoose.connection.once('open', ()=> {
     console.log('connected to mongo')
 })
-
 
 app.listen(PORT, () => {
   console.log("listening")

@@ -4,6 +4,7 @@ const app = express()
 const fruits = require('./models/fruits.js')
 const mongoose = require('mongoose')
 const Fruit = require('./models/fruits.js')
+const mOverride = require('method-override')
 // const PORT = process.env.PORT || 3001;
 const PORT = process.env.PORT || 3001;
 
@@ -15,6 +16,7 @@ app.use((req, res, next)=>{
 })
 //keep this near the top 
 app.use(express.urlencoded({extended:true}))
+app.use(mOverride('_method'));
 
 //set up view engine above routes
 app.set('view engine', 'jsx')
@@ -81,6 +83,36 @@ app.post('/fruits/', (req, res)=>{
   console.log(fruits)
   console.log(req.body)
 })
+
+app.delete('/fruits/:id', (req, res)=>{
+  Fruit.findByIdAndRemove(req.params.id, (err, data)=>{
+      res.redirect('/fruits');//redirect back to fruits index
+  });
+});
+
+app.get('/fruits/:id/edit', (req, res)=>{
+  Fruit.findById(req.params.id, (err, foundFruit)=>{ //find the fruit
+    if(!err){
+      res.render(
+        'Edit',
+      {
+        fruit: foundFruit //pass in found fruit
+      }
+    );
+  } else {
+    res.send({ msg: err.message })
+  }
+  });
+});
+
+app.put('/fruits/:id', (req, res)=>{
+  if(req.body.readyToEat === 'on'){
+      req.body.readyToEat = true;
+  } else {
+      req.body.readyToEat = false;
+  }
+  res.send(req.body);
+});
 
 //connect to mongo database
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });

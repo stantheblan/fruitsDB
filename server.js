@@ -17,6 +17,7 @@ app.use((req, res, next)=>{
 //keep this near the top 
 app.use(express.urlencoded({extended:true}))
 app.use(mOverride('_method'));
+app.use(express.static('public'))
 
 //set up view engine above routes
 app.set('view engine', 'jsx')
@@ -111,7 +112,11 @@ app.put('/fruits/:id', (req, res)=>{
   } else {
       req.body.readyToEat = false;
   }
-  res.send(req.body);
+  Fruit.findByIdAndUpdate(req.params.id, req.body, {new:true}, (err, updatedModel)=>{
+    // res.send(updatedModel);
+    res.redirect('/fruits');
+});
+  
 });
 
 //connect to mongo database

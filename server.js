@@ -1,130 +1,32 @@
+// Import Modules and set up vars
 require('dotenv').config()
-const express = require('express')
-const app = express()
-const fruits = require('./models/fruits.js')
-const mongoose = require('mongoose')
-const Fruit = require('./models/fruits.js')
-const mOverride = require('method-override')
-// const PORT = process.env.PORT || 3001;
-const PORT = process.env.PORT || 3001;
+const express = require('express');
+const methodOverride = require('method-override');
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-//MUST BE FIRST 
-//middleware
-app.use((req, res, next)=>{
-  console.log('I run for all routes')
-  next()
+//connect to database
+const db = require('./models/db')
+db.once('open', () => {
+  console.log('connected to mongo')
 })
-//keep this near the top 
-app.use(express.urlencoded({extended:true}))
-app.use(mOverride('_method'));
-app.use(express.static('public'))
 
-//set up view engine above routes
-app.set('view engine', 'jsx')
+//Initialize View Engine
+app.set('view engine', 'jsx');
 app.engine('jsx', require('express-react-views').createEngine())
 
-//create seed data to populate database 
-app.get('/fruits/seed', (req, res)=>{
-  Fruit.create([
-      {
-          name:'grapefruit',
-          color:'pink',
-          readyToEat:true
-      },
-      {
-          name:'grape',
-          color:'purple',
-          readyToEat:false
-      },
-      {
-          name:'avocado',
-          color:'green',
-          readyToEat:true
-      }
-  ], (err, data)=>{
-      res.redirect('/fruits');
-  })
-});
+// Mount Express Middleware
+app.use((req, res, next) => {
+  res.locals.data = {}
+  next()
+}) // Creates res.locals.data
+app.use(express.urlencoded({ extended: true })) // Creates req.body
+app.use(methodOverride('_method')); // Allows us to override methods
+app.use(express.static('public')); // Allows us to have Static Files
+app.use('/fruits', require('./controllers/routeController.js')); // Mounts our RESTFUL/INDUCES ROUTES at /fruits
 
-//index route : Show ALL 
-app.get('/fruits', function (req, res) {
-  Fruit.find({}, (error, allFruits) => {
-    res.render('Index', {
-      fruits: allFruits
-    })
-  })
-})
-//============================================================================================
 
-//create a page that will allow us to create a new fruit 
-app.get('/fruits/new', (req,res)=>{
-  res.render('New')
-})
-
-//show route 
-app.get('/fruits/:id', function(req, res){
-  Fruit.findById(req.params.id, (err, foundFruit)=>{
-    res.render('Show', {fruit:foundFruit})
-  })
-})
-
-//form POST 
-app.post('/fruits/', (req, res)=>{
-  if(req.body.readyToEat === 'on'){//if checked, req.body.readyToEat is set to 'on'
-    req.body.readyToEat = true //set equal to true so it doesn't get passed as 'on' 
-  }
-  else {
-    //if it is not checked req.body.readyToEat is undefined
-    req.body.readyToEat = false
-  }
-  Fruit.create(req.body, (error, createdFruit)=>{
-    res.redirect('/fruits')
-  })
-  
-  console.log(fruits)
-  console.log(req.body)
-})
-
-app.delete('/fruits/:id', (req, res)=>{
-  Fruit.findByIdAndRemove(req.params.id, (err, data)=>{
-      res.redirect('/fruits');//redirect back to fruits index
-  });
-});
-
-app.get('/fruits/:id/edit', (req, res)=>{
-  Fruit.findById(req.params.id, (err, foundFruit)=>{ //find the fruit
-    if(!err){
-      res.render(
-        'Edit',
-      {
-        fruit: foundFruit //pass in found fruit
-      }
-    );
-  } else {
-    res.send({ msg: err.message })
-  }
-  });
-});
-
-app.put('/fruits/:id', (req, res)=>{
-  if(req.body.readyToEat === 'on'){
-      req.body.readyToEat = true;
-  } else {
-      req.body.readyToEat = false;
-  }
-  Fruit.findByIdAndUpdate(req.params.id, req.body, {new:true}, (err, updatedModel)=>{
-    // res.send(updatedModel);
-    res.redirect('/fruits');
-});
-  
-});
-
-//connect to mongo database
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-mongoose.connection.once('open', ()=> {
-    console.log('connected to mongo')
-})
-
+// Listen on PORT
 app.listen(PORT, () => {
-  console.log("listening")
+  console.log('We in the building', PORT)
 })
